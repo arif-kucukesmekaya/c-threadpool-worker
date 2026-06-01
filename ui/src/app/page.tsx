@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, SquareSquare, Terminal, Server, ArrowRight, Database, Cpu, Activity, RefreshCw, Zap, Flame, BoxSelect, Plus } from 'lucide-react';
 
-type Task = { id: string; type: string; payload: string; weight: number };
-type Thread = { id: string; name: string; status: 'IDLE' | 'WORKING'; currentTask: Task | null; remaining: number; completed: number };
+type Task = { id: string; type: string; payload: string; weight: number; taskId: number };
+type Thread = { id: string; name: string; status: 'IDLE' | 'WORKING'; currentTask: Task | null; remaining: number; completed: number; realId: number };
 
 export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
@@ -14,16 +14,22 @@ export default function Home() {
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
 
+  const getLogTime = () => {
+    const d = new Date();
+    const dateStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+    return `[${dateStr} ${d.toLocaleTimeString('tr-TR', { hour12: false })}]`;
+  };
+
   // Simulation Engine State
   const engineRef = useRef({
     queue: [] as Task[],
     threads: [
-      { id: '1', name: 'THREAD-0', status: 'IDLE', currentTask: null, remaining: 0, completed: 0 } as Thread,
-      { id: '2', name: 'THREAD-1', status: 'IDLE', currentTask: null, remaining: 0, completed: 0 } as Thread,
-      { id: '3', name: 'THREAD-2', status: 'IDLE', currentTask: null, remaining: 0, completed: 0 } as Thread,
-      { id: '4', name: 'THREAD-3', status: 'IDLE', currentTask: null, remaining: 0, completed: 0 } as Thread,
+      { id: '1', name: 'THREAD-0', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 1 },
+      { id: '2', name: 'THREAD-1', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 2 },
+      { id: '3', name: 'THREAD-2', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 3 },
+      { id: '4', name: 'THREAD-3', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 4 },
     ],
-    logs: [] as { id: number; thread: string; action: string; time: string; type: string }[],
+    logs: [] as { id: number; action: string; type: string }[],
     stats: { total: 0, processed: 0, maxQueue: 0, capacity: 100 }
   });
 
@@ -44,11 +50,21 @@ export default function Home() {
             t.status = 'IDLE';
             t.completed++;
             eng.stats.processed++;
+            
+            let resultStr = '';
+            if (t.currentTask.type === "PRIME") {
+              const num = parseInt(t.currentTask.payload);
+              const isPrime = num % 2 !== 0 && num % 3 !== 0; // Fake prime logic for UI simulation
+              resultStr = `${num} is ${isPrime ? 'prime' : 'not prime'}`;
+            } else if (t.currentTask.type === "LINECOUNT") {
+              resultStr = `File test_files/${t.currentTask.payload} has ${Math.floor(Math.random() * 100) + 1} lines`;
+            } else {
+              resultStr = `File test_files/${t.currentTask.payload} has ${Math.floor(Math.random() * 100) + 1} chars`;
+            }
+
             eng.logs.push({
               id: Date.now() + Math.random(),
-              thread: t.name,
-              action: `BİTTİ: ${t.currentTask.type} [${t.currentTask.payload}]`,
-              time: new Date().toLocaleTimeString('tr-TR', { hour12: false }),
+              action: `${getLogTime()} [INFO] Thread ${t.realId} completed Task ${t.currentTask.taskId}: ${resultStr}`,
               type: 'success'
             });
             t.currentTask = null;
@@ -65,9 +81,7 @@ export default function Home() {
           t.remaining = task.weight;
           eng.logs.push({
             id: Date.now() + Math.random(),
-            thread: t.name,
-            action: `ALINDI: ${task.type} [${task.payload}]`,
-            time: new Date().toLocaleTimeString('tr-TR', { hour12: false }),
+            action: `${getLogTime()} [INFO] Thread ${t.realId} processing Task ${task.taskId} (${task.type})`,
             type: 'working'
           });
           stateMutated = true;
@@ -103,23 +117,20 @@ export default function Home() {
     if (eng.queue.length >= eng.stats.capacity) {
       eng.logs.push({
         id: Date.now(),
-        thread: 'MAIN',
-        action: `HATA: Kuyruk Dolu! STATUS_QUEUE_FULL`,
-        time: new Date().toLocaleTimeString('tr-TR', { hour12: false }),
+        action: `${getLogTime()} [ERROR] Queue is full (Max capacity: ${eng.stats.capacity})`,
         type: 'error'
       });
       setTick(t => t + 1);
       return;
     }
 
-    eng.queue.push({ id: Math.random().toString(), type, payload, weight });
     eng.stats.total++;
+    const taskId = eng.stats.total;
+    eng.queue.push({ id: Math.random().toString(), type, payload, weight, taskId });
     
     eng.logs.push({
       id: Date.now() + Math.random(),
-      thread: 'MAIN',
-      action: `EKLE (PUSH): ${type} -> ${payload}`,
-      time: new Date().toLocaleTimeString('tr-TR', { hour12: false }),
+      action: `${getLogTime()} [INFO] Task ${taskId} added to queue`,
       type: 'info'
     });
     setTick(t => t + 1);
@@ -128,23 +139,24 @@ export default function Home() {
   const handleStart = () => {
     if (isRunning) return;
     const eng = engineRef.current;
-    eng.logs = [{ id: Date.now(), thread: 'MAIN', action: 'Sistem başlatıldı. Mutex & CV hazır. Kuyruk kapasitesi 100.', time: new Date().toLocaleTimeString('tr-TR', { hour12: false }), type: 'info' }];
+    
     eng.stats = { total: 0, processed: 0, maxQueue: 0, capacity: 100 };
     eng.queue = [];
     eng.threads.forEach(t => { t.status = 'IDLE'; t.completed = 0; t.currentTask = null; });
-    
+    eng.logs = [{ id: Date.now(), action: `${getLogTime()} [INFO] System started with 4 threads`, type: 'info' }];
+
     setIsRunning(true);
     setIsShuttingDown(false);
     setTick(t => t + 1);
 
     // Initial tasks
     setTimeout(() => pushTask('PRIME', '97', 600), 500);
-    setTimeout(() => pushTask('LINECOUNT', 'test/large.txt', 1200), 700);
+    setTimeout(() => pushTask('LINECOUNT', 'large.txt', 1200), 700);
   };
 
   const handleShutdown = () => {
     setIsShuttingDown(true);
-    engineRef.current.logs.push({ id: Date.now(), thread: 'MAIN', action: 'SHUTDOWN_SIGNAL! Broadcast yapılıyor, tüm IDLE threadler sonlanacak.', time: new Date().toLocaleTimeString('tr-TR', { hour12: false }), type: 'error' });
+    engineRef.current.logs.push({ id: Date.now(), action: `${getLogTime()} [INFO] All tasks enqueued. Signalling shutdown.`, type: 'error' });
     setTick(t => t + 1);
     setTimeout(() => setIsRunning(false), 2000);
   };

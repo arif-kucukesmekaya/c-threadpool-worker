@@ -1,26 +1,26 @@
-[2026-06-01 13:51:21] [INFO] System started with 4 threads
-[2026-06-01 13:51:21] [INFO] Task 1 added to queue
-[2026-06-01 13:51:21] [INFO] Thread 1 processing Task 1 (PRIME)
-[2026-06-01 13:51:22] [INFO] Task 2 added to queue
-[2026-06-01 13:51:22] [INFO] Thread 2 processing Task 2 (PRIME)
-[2026-06-01 13:51:22] [INFO] Task 3 added to queue
-[2026-06-01 13:51:22] [INFO] Thread 3 processing Task 3 (PRIME)
-[2026-06-01 13:51:22] [INFO] Task 4 added to queue
-[2026-06-01 13:51:22] [INFO] Thread 4 processing Task 4 (LINECOUNT)
-[2026-06-01 13:51:22] [INFO] Thread 1 completed Task 1: 97 is prime
-[2026-06-01 13:51:22] [INFO] Task 5 added to queue
-[2026-06-01 13:51:22] [INFO] Thread 1 processing Task 5 (CHARCOUNT)
-[2026-06-01 13:51:22] [INFO] Thread 2 completed Task 2: 100 is not prime
-[2026-06-01 13:51:22] [INFO] Task 6 added to queue
-[2026-06-01 13:51:22] [INFO] Thread 2 processing Task 6 (LINECOUNT)
-[2026-06-01 13:51:23] [INFO] Thread 3 completed Task 3: 7919 is prime
-[2026-06-01 13:51:23] [INFO] Task 7 added to queue
-[2026-06-01 13:51:23] [INFO] Thread 3 processing Task 7 (CHARCOUNT)
-[2026-06-01 13:51:23] [INFO] Thread 4 completed Task 4: File test_files/file1.txt has 1 lines
-[2026-06-01 13:51:23] [INFO] Task 8 added to queue
-[2026-06-01 13:51:23] [INFO] Thread 4 processing Task 8 (PRIME)
-[2026-06-01 13:51:23] [INFO] Thread 1 completed Task 5: File test_files/file2.txt has 6 chars
-[2026-06-01 13:51:23] [INFO] All tasks enqueued. Signalling shutdown.
-[2026-06-01 13:51:23] [INFO] Thread 2 completed Task 6: File test_files/file3.txt has 1 lines
-[2026-06-01 13:51:23] [INFO] Thread 3 completed Task 7: File test_files/file1.txt has 27 chars
-[2026-06-01 13:51:24] [INFO] Thread 4 completed Task 8: 9973 is prime
+[2026-06-01 14:38:53] [INFO] System started with 4 threads
+[2026-06-01 14:38:53] [INFO] Task 1 added to queue
+[2026-06-01 14:38:53] [INFO] Thread 2 processing Task 1 (PRIME)
+[2026-06-01 14:38:53] [INFO] Task 2 added to queue
+[2026-06-01 14:38:53] [INFO] Thread 3 processing Task 2 (PRIME)
+[2026-06-01 14:38:54] [INFO] Task 3 added to queue
+[2026-06-01 14:38:54] [INFO] Thread 1 processing Task 3 (PRIME)
+[2026-06-01 14:38:54] [INFO] Task 4 added to queue
+[2026-06-01 14:38:54] [INFO] Thread 4 processing Task 4 (LINECOUNT)
+[2026-06-01 14:38:54] [INFO] Thread 2 completed Task 1: 97 is prime
+[2026-06-01 14:38:54] [INFO] Task 5 added to queue
+[2026-06-01 14:38:54] [INFO] Thread 2 processing Task 5 (CHARCOUNT)
+[2026-06-01 14:38:54] [INFO] Thread 3 completed Task 2: 100 is not prime
+[2026-06-01 14:38:54] [INFO] Task 6 added to queue
+[2026-06-01 14:38:54] [INFO] Thread 3 processing Task 6 (LINECOUNT)
+[2026-06-01 14:38:54] [INFO] Thread 1 completed Task 3: 7919 is prime
+[2026-06-01 14:38:54] [INFO] Task 7 added to queue
+[2026-06-01 14:38:54] [INFO] Thread 1 processing Task 7 (CHARCOUNT)
+[2026-06-01 14:38:55] [INFO] Thread 4 completed Task 4: File test_files/file1.txt has 1 lines
+[2026-06-01 14:38:55] [INFO] Task 8 added to queue
+[2026-06-01 14:38:55] [INFO] Thread 4 processing Task 8 (PRIME)
+[2026-06-01 14:38:55] [INFO] Thread 2 completed Task 5: File test_files/file2.txt has 6 chars
+[2026-06-01 14:38:55] [INFO] All tasks enqueued. Signalling shutdown.
+[2026-06-01 14:38:55] [INFO] Thread 3 completed Task 6: File test_files/file3.txt has 1 lines
+[2026-06-01 14:38:55] [INFO] Thread 1 completed Task 7: File test_files/file1.txt has 27 chars
+[2026-06-01 14:38:55] [INFO] Thread 4 completed Task 8: 9973 is prime
