@@ -1,0 +1,25 @@
+#ifndef COMMON_H
+#define COMMON_H
+
+#define MAX_FILENAME_LENGTH 256
+#define MAX_LINE_LENGTH 512
+#define DEFAULT_QUEUE_CAPACITY 100
+#define DEFAULT_THREAD_COUNT 4
+
+typedef enum {
+    TASK_PRIME = 1,
+    TASK_LINE_COUNT,
+    TASK_CHAR_COUNT
+} TaskType;
+
+typedef enum {
+    STATUS_SUCCESS = 0,
+    STATUS_ERROR = -1,
+    STATUS_QUEUE_FULL = -2,
+    STATUS_QUEUE_EMPTY = -3,
+    STATUS_INVALID_TASK = -4,
+    STATUS_FILE_ERROR = -5,
+    STATUS_THREAD_ERROR = -6
+} StatusCode;
+
+#endif

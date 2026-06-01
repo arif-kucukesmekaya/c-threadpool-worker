@@ -1,0 +1,9 @@
+# görev listesi
+PRIME 97
+PRIME 100
+PRIME 7919
+LINECOUNT test_files/file1.txt
+CHARCOUNT test_files/file2.txt
+LINECOUNT test_files/file3.txt
+CHARCOUNT test_files/file1.txt
+PRIME 9973
