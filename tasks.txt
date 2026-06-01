@@ -1,9 +1,19 @@
-# görev listesi
+# gorev listesi
 PRIME 97
-PRIME 100
-PRIME 7919
 LINECOUNT test_files/file1.txt
-CHARCOUNT test_files/file2.txt
-LINECOUNT test_files/file3.txt
 CHARCOUNT test_files/file1.txt
+PRIME 100
+LINECOUNT test_files/file2.txt
+CHARCOUNT test_files/file2.txt
+PRIME 7919
+LINECOUNT test_files/file3.txt
+CHARCOUNT test_files/file3.txt
 PRIME 9973
+PRIME 104729
+LINECOUNT test_files/file4.txt
+CHARCOUNT test_files/file4.txt
+PRIME 12345
+PRIME 99991
+CHARCOUNT test_files/file5.txt
+LINECOUNT test_files/file5.txt
+PRIME 65537

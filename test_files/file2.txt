@@ -1,1 +1,6 @@
-12345
+file2: short input for fast jobs
+alpha beta gamma
+12345 67890
+queue capacity check line
+shutdown signal should be graceful
+file2 done

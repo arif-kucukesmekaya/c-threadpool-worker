@@ -1,1 +1,10 @@
-This is the third file
+System programming project notes
+Task format examples:
+PRIME number
+LINECOUNT path
+CHARCOUNT path
+The same queue is shared by all workers.
+Each worker records start and end time.
+The logger writes to stdout and log.txt.
+Tests should include small and medium files.
+End of file three.

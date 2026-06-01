@@ -1,1 +1,8 @@
-A random line\nAnd another
+Thread pool test file one
+Producer adds work to the shared queue.
+Worker threads wait on condition variables.
+Mutex locks protect queue and log writes.
+Prime tasks simulate CPU bound work.
+Line count tasks read this file line by line.
+Character count tasks measure the whole file.
+End of file one.

@@ -1,0 +1,7 @@
+Thread pool extended test file four
+This file adds more work for LINECOUNT tasks.
+Workers should process it without changing queue logic.
+The producer keeps reading tasks from tasks.txt.
+Condition variables wake idle threads when new tasks arrive.
+Every completed task is written to log.txt.
+File four ends here.

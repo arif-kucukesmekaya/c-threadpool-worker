@@ -1,15 +1,102 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, SquareSquare, Terminal, Server, ArrowRight, Database, Cpu, Activity, RefreshCw, Zap, Flame, BoxSelect, Plus } from 'lucide-react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import { Play, SquareSquare, Terminal, ArrowRight, Cpu, Activity, RefreshCw, Zap, Flame, BoxSelect, Plus } from 'lucide-react';
 
 type Task = { id: string; type: string; payload: string; weight: number; taskId: number };
+type TaskTemplate = { type: string; payload: string; weight: number };
 type Thread = { id: string; name: string; status: 'IDLE' | 'WORKING'; currentTask: Task | null; remaining: number; completed: number; realId: number };
+type LogEntry = { id: number; action: string; type: string; thread: string; time: string };
+type EngineState = {
+  queue: Task[];
+  threads: Thread[];
+  logs: LogEntry[];
+  stats: { total: number; processed: number; maxQueue: number; capacity: number };
+};
+
+const FILE_STATS: Record<string, { lines: number; chars: number }> = {
+  'test_files/file1.txt': { lines: 8, chars: 298 },
+  'test_files/file2.txt': { lines: 6, chars: 134 },
+  'test_files/file3.txt': { lines: 10, chars: 284 },
+  'test_files/file4.txt': { lines: 7, chars: 313 },
+  'test_files/file5.txt': { lines: 7, chars: 323 },
+};
+
+const PROJECT_TASKS: TaskTemplate[] = [
+  { type: 'PRIME', payload: '97', weight: 700 },
+  { type: 'LINECOUNT', payload: 'test_files/file1.txt', weight: 900 },
+  { type: 'CHARCOUNT', payload: 'test_files/file1.txt', weight: 1100 },
+  { type: 'PRIME', payload: '100', weight: 600 },
+  { type: 'LINECOUNT', payload: 'test_files/file2.txt', weight: 750 },
+  { type: 'CHARCOUNT', payload: 'test_files/file2.txt', weight: 950 },
+  { type: 'PRIME', payload: '7919', weight: 1800 },
+  { type: 'LINECOUNT', payload: 'test_files/file3.txt', weight: 1000 },
+  { type: 'CHARCOUNT', payload: 'test_files/file3.txt', weight: 1250 },
+  { type: 'PRIME', payload: '9973', weight: 1900 },
+  { type: 'PRIME', payload: '104729', weight: 2600 },
+  { type: 'LINECOUNT', payload: 'test_files/file4.txt', weight: 950 },
+  { type: 'CHARCOUNT', payload: 'test_files/file4.txt', weight: 1200 },
+  { type: 'PRIME', payload: '12345', weight: 1400 },
+  { type: 'PRIME', payload: '99991', weight: 2400 },
+  { type: 'CHARCOUNT', payload: 'test_files/file5.txt', weight: 1250 },
+  { type: 'LINECOUNT', payload: 'test_files/file5.txt', weight: 1000 },
+  { type: 'PRIME', payload: '65537', weight: 2200 },
+];
+
+const isPrime = (value: number) => {
+  if (value <= 1) return false;
+  if (value <= 3) return true;
+  if (value % 2 === 0 || value % 3 === 0) return false;
+  for (let i = 5; i * i <= value; i += 6) {
+    if (value % i === 0 || value % (i + 2) === 0) return false;
+  }
+  return true;
+};
+
+const getTaskResult = (task: Task) => {
+  if (task.type === 'PRIME') {
+    const num = parseInt(task.payload, 10);
+    return `${num} is ${isPrime(num) ? 'prime' : 'not prime'}`;
+  }
+
+  const stats = FILE_STATS[task.payload];
+  if (!stats) return `Failed to open file: ${task.payload}`;
+
+  if (task.type === 'LINECOUNT') return `File ${task.payload} has ${stats.lines} lines`;
+  return `File ${task.payload} has ${stats.chars} chars`;
+};
+
+const getRandomTaskByType = (type: string) => {
+  const tasks = PROJECT_TASKS.filter((task) => task.type === type);
+  return tasks[Math.floor(Math.random() * tasks.length)];
+};
+
+const createInitialEngine = (): EngineState => ({
+  queue: [],
+  threads: [
+    { id: '1', name: 'THREAD-0', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 0 },
+    { id: '2', name: 'THREAD-1', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 1 },
+    { id: '3', name: 'THREAD-2', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 2 },
+    { id: '4', name: 'THREAD-3', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 3 },
+  ],
+  logs: [],
+  stats: { total: 0, processed: 0, maxQueue: 0, capacity: 100 },
+});
+
+const snapshotEngine = (eng: EngineState): EngineState => ({
+  queue: [...eng.queue],
+  threads: eng.threads.map((thread) => ({
+    ...thread,
+    currentTask: thread.currentTask ? { ...thread.currentTask } : null,
+  })),
+  logs: [...eng.logs],
+  stats: { ...eng.stats },
+});
 
 export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
   const [isShuttingDown, setIsShuttingDown] = useState(false);
-  const [tick, setTick] = useState(0); // Force renders for engine state
+  const [tick, setTick] = useState(0);
   
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
@@ -20,17 +107,13 @@ export default function Home() {
   };
 
   // Simulation Engine State
-  const engineRef = useRef({
-    queue: [] as Task[],
-    threads: [
-      { id: '1', name: 'THREAD-0', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 1 },
-      { id: '2', name: 'THREAD-1', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 2 },
-      { id: '3', name: 'THREAD-2', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 3 },
-      { id: '4', name: 'THREAD-3', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 4 },
-    ] as Thread[],
-    logs: [] as { id: number; action: string; type: string; thread: string; time: string }[],
-    stats: { total: 0, processed: 0, maxQueue: 0, capacity: 100 }
-  });
+  const engineRef = useRef<EngineState>(createInitialEngine());
+  const [eng, setEng] = useState<EngineState>(createInitialEngine);
+
+  const refreshEngine = useCallback(() => {
+    setEng(snapshotEngine(engineRef.current));
+    setTick((current) => current + 1);
+  }, []);
 
   // Game/Simulation Loop
   useEffect(() => {
@@ -40,7 +123,7 @@ export default function Home() {
       let stateMutated = false;
       const eng = engineRef.current;
 
-      for (let t of eng.threads) {
+      for (const t of eng.threads) {
         if (t.status === 'WORKING' && t.currentTask) {
           t.remaining -= 200; // tick every 200ms
           
@@ -50,16 +133,7 @@ export default function Home() {
             t.completed++;
             eng.stats.processed++;
             
-            let resultStr = '';
-            if (t.currentTask.type === "PRIME") {
-              const num = parseInt(t.currentTask.payload);
-              const isPrime = num % 2 !== 0 && num % 3 !== 0; // Fake prime logic for UI simulation
-              resultStr = `${num} is ${isPrime ? 'prime' : 'not prime'}`;
-            } else if (t.currentTask.type === "LINECOUNT") {
-              resultStr = `File test_files/${t.currentTask.payload} has ${Math.floor(Math.random() * 100) + 1} lines`;
-            } else {
-              resultStr = `File test_files/${t.currentTask.payload} has ${Math.floor(Math.random() * 100) + 1} chars`;
-            }
+            const resultStr = getTaskResult(t.currentTask);
 
             eng.logs.push({
               id: Date.now() + Math.random(),
@@ -100,11 +174,11 @@ export default function Home() {
       // Auto-truncate logs to keep simulation fast
       if (eng.logs.length > 100) eng.logs = eng.logs.slice(-100);
 
-      if (stateMutated) setTick(t => t + 1);
+      if (stateMutated) refreshEngine();
     }, 200);
 
     return () => clearInterval(interval);
-  }, [isRunning, isShuttingDown]);
+  }, [isRunning, isShuttingDown, refreshEngine]);
 
   // Keep logs scrolled to bottom
   useEffect(() => {
@@ -125,7 +199,7 @@ export default function Home() {
         thread: 'MAIN',
         time: getLogTime()
       });
-      setTick(t => t + 1);
+      refreshEngine();
       return;
     }
 
@@ -140,7 +214,7 @@ export default function Home() {
       thread: 'MAIN',
       time: getLogTime()
     });
-    setTick(t => t + 1);
+    refreshEngine();
   };
 
   const handleStart = () => {
@@ -154,21 +228,19 @@ export default function Home() {
 
     setIsRunning(true);
     setIsShuttingDown(false);
-    setTick(t => t + 1);
+    refreshEngine();
 
-    // Initial tasks
-    setTimeout(() => pushTask('PRIME', '97', 600), 500);
-    setTimeout(() => pushTask('LINECOUNT', 'large.txt', 1200), 700);
+    PROJECT_TASKS.forEach((task, index) => {
+      setTimeout(() => pushTask(task.type, task.payload, task.weight), 350 + index * 140);
+    });
   };
 
   const handleShutdown = () => {
     setIsShuttingDown(true);
     engineRef.current.logs.push({ id: Date.now(), action: `All tasks enqueued. Signalling shutdown.`, type: 'error', thread: 'MAIN', time: getLogTime() });
-    setTick(t => t + 1);
+    refreshEngine();
     setTimeout(() => setIsRunning(false), 2000);
   };
-
-  const eng = engineRef.current;
 
   return (
     <div className="min-h-screen p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto">
@@ -290,20 +362,29 @@ export default function Home() {
             <span>Manuel Görev Ekle</span>
             <BoxSelect className="w-6 h-6" />
           </h3>
-          <p className="font-mono text-xs text-gray-600 mb-4">istediğiniz yükte görevi kuyruğa `push` edin ve thread havuzunun nasıl tükettiğini izleyin.</p>
+          <p className="font-mono text-xs text-gray-600 mb-4">Butonlar `tasks.txt` ve `test_files` icindeki ayni veri setinden gorev ekler.</p>
           
           <div className="flex flex-col gap-3">
-             <button disabled={!isRunning} onClick={() => pushTask('LINECOUNT', 'test/file1.txt', 500)} className="brutal-button !bg-brutal-green text-white py-2 px-3 flex items-center justify-between disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
+             <button disabled={!isRunning} onClick={() => {
+               const task = getRandomTaskByType('LINECOUNT');
+               pushTask(task.type, task.payload, 500);
+             }} className="brutal-button !bg-brutal-green text-white py-2 px-3 flex items-center justify-between disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                <div className="flex items-center gap-2"><Zap className="w-4 h-4 fill-current"/> <span className="font-bold text-sm">Hızlı (satır say)</span></div>
                <span className="font-mono text-xs bg-black text-white px-1">0.5sn</span>
              </button>
              
-             <button disabled={!isRunning} onClick={() => pushTask('CHARCOUNT', 'data/logs.csv', 1800)} className="brutal-button !bg-brutal-yellow text-black py-2 px-3 flex items-center justify-between disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
+             <button disabled={!isRunning} onClick={() => {
+               const task = getRandomTaskByType('CHARCOUNT');
+               pushTask(task.type, task.payload, 1800);
+             }} className="brutal-button !bg-brutal-yellow text-black py-2 px-3 flex items-center justify-between disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                <div className="flex items-center gap-2"><Activity className="w-4 h-4"/> <span className="font-bold text-sm">Normal (harf say)</span></div>
                <span className="font-mono text-xs bg-black text-white px-1">1.8sn</span>
              </button>
 
-             <button disabled={!isRunning} onClick={() => pushTask('PRIME', '104729 (Asal Mı?)', 4500)} className="brutal-button !bg-brutal-red text-white py-2 flex items-center justify-between px-3 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
+             <button disabled={!isRunning} onClick={() => {
+               const task = getRandomTaskByType('PRIME');
+               pushTask(task.type, task.payload, 4500);
+             }} className="brutal-button !bg-brutal-red text-white py-2 flex items-center justify-between px-3 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                <div className="flex items-center gap-2"><Flame className="w-5 h-5 fill-current"/> <span className="font-bold text-sm text-[15px]">Ağır Ağır (PRIME)</span></div>
                <span className="font-mono text-xs bg-white text-black px-1 font-bold">4.5sn</span>
              </button>
@@ -311,9 +392,8 @@ export default function Home() {
              <button disabled={!isRunning} onClick={() => {
                 for(let i=0; i<5; i++) {
                    setTimeout(() => {
-                      const types = [['PRIME','31',600], ['CHARCOUNT','x.txt',1000], ['LINECOUNT','y.md',500], ['PRIME','99991',3000]];
-                      const sel = types[Math.floor(Math.random()*types.length)];
-                      pushTask(sel[0] as string, sel[1] as string, sel[2] as number);
+                      const sel = PROJECT_TASKS[Math.floor(Math.random() * PROJECT_TASKS.length)];
+                      pushTask(sel.type, sel.payload, sel.weight);
                    }, i * 100);
                 }
              }} className="brutal-button !bg-brutal-blue text-white py-2 flex justify-center items-center gap-2 mt-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
@@ -339,6 +419,7 @@ export default function Home() {
             </li>
           </ul>
         </div>
+
       </div>
 
       {/* BOTTOM LOG BOARD */}

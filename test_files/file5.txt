@@ -1,0 +1,7 @@
+file5 dataset for character count checks
+CPU bound and IO bound jobs can live in the same queue.
+PRIME 104729 is useful for a heavier calculation.
+LINECOUNT and CHARCOUNT validate file access paths.
+Repeated tasks help show fair worker distribution.
+Graceful shutdown waits until queued work is finished.
+End of file five.
