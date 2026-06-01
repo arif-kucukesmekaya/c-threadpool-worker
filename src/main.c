@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 // Ortalama görev süresi hesaplamak için
-static double global_total_task_time_ms = 0.0;
+double global_total_task_time_ms = 0.0;
 static pthread_mutex_t global_time_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // process_task()'ın sonrasındaki task bilgilerini analiz edemiyoruz çünkü pop_task değeri kendi scope'unda kalıyor.
@@ -39,18 +39,18 @@ int main(int argc, char *argv[]) {
     if (num_threads <= 0) num_threads = DEFAULT_THREAD_COUNT;
 
     logger_init("log.txt");
-    log_message(LOG_INFO, "System started with %d threads", num_threads);
+    log_message(LOG_INFO, "[MAIN] System started with %d threads", num_threads);
 
     TaskQueue queue;
     if (queue_init(&queue, DEFAULT_QUEUE_CAPACITY) != STATUS_SUCCESS) {
-        log_message(LOG_ERROR, "Failed to initialize queue");
+        log_message(LOG_ERROR, "[MAIN] Failed to initialize queue");
         logger_close();
         return 1;
     }
 
     ThreadPool pool;
     if (thread_pool_init(&pool, num_threads, &queue) != STATUS_SUCCESS) {
-        log_message(LOG_ERROR, "Failed to initialize thread pool");
+        log_message(LOG_ERROR, "[MAIN] Failed to initialize thread pool");
         queue_destroy(&queue);
         logger_close();
         return 1;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     FILE *fp = fopen(tasks_file, "r");
     if (!fp) {
-        log_message(LOG_ERROR, "Failed to open tasks file: %s", tasks_file);
+        log_message(LOG_ERROR, "[MAIN] Failed to open tasks file: %s", tasks_file);
         thread_pool_destroy(&pool);
         queue_destroy(&queue);
         logger_close();
@@ -82,17 +82,17 @@ int main(int argc, char *argv[]) {
         if (parse_task_line(line, &new_task, task_id_counter) == STATUS_SUCCESS) {
             clock_gettime(CLOCK_MONOTONIC, &new_task.enqueue_time);
             queue_push(&queue, new_task);
-            log_message(LOG_INFO, "Task %d added to queue", task_id_counter);
+            log_message(LOG_INFO, "[MAIN] [TASK-%d] Added to queue: %s", task_id_counter, line);
             task_id_counter++;
             total_tasks_loaded++;
             usleep(200000); // 200ms bekleme (Animasyonu görebilmek için)
         } else {
-            log_message(LOG_WARNING, "Invalid task format: %s", line);
+            log_message(LOG_WARNING, "[MAIN] Invalid task format: %s", line);
         }
     }
     fclose(fp);
 
-    log_message(LOG_INFO, "All tasks enqueued. Signalling shutdown.");
+    log_message(LOG_INFO, "[MAIN] All tasks enqueued. Signalling shutdown.");
     queue_signal_shutdown(&queue);
 
     thread_pool_join(&pool);
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     double total_exec_time = timespec_to_ms(sys_start_time, sys_end_time);
     
-    // (Avarage hesabı için `global_total_task_time_ms` hook etmedik ama istenirse eklenir. Şimdilik Total basılıyor)
+    double avg_task_time = pool.total_processed > 0 ? (global_total_task_time_ms / pool.total_processed) : 0.0;
     
     printf("\n=== Thread Pool Summary ===\n");
     printf("Total tasks loaded      : %d\n", total_tasks_loaded);
@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
     printf("Thread count            : %d\n", num_threads);
     printf("Maximum queue size      : %d\n", pool.max_queue_size);
     printf("Total execution time    : %.2f ms\n", total_exec_time);
+    printf("Average task time       : %.2f ms\n", avg_task_time);
 
     printf("\nThread usage:\n");
     for (int i = 0; i < num_threads; i++) {

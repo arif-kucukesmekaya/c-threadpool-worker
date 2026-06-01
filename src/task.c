@@ -66,7 +66,7 @@ int process_task(Task *task, char *result_buffer, size_t buffer_size) {
 
         if (task->type == TASK_LINE_COUNT) {
             int lines = 0;
-            char ch;
+            int ch;
             while ((ch = fgetc(fp)) != EOF) {
                 if (ch == '\n') lines++;
             }

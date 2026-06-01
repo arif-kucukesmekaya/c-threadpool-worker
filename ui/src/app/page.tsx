@@ -16,8 +16,7 @@ export default function Home() {
 
   const getLogTime = () => {
     const d = new Date();
-    const dateStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
-    return `[${dateStr} ${d.toLocaleTimeString('tr-TR', { hour12: false })}]`;
+    return d.toLocaleTimeString('tr-TR', { hour12: false });
   };
 
   // Simulation Engine State
@@ -28,8 +27,8 @@ export default function Home() {
       { id: '2', name: 'THREAD-1', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 2 },
       { id: '3', name: 'THREAD-2', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 3 },
       { id: '4', name: 'THREAD-3', status: 'IDLE', currentTask: null, remaining: 0, completed: 0, realId: 4 },
-    ],
-    logs: [] as { id: number; action: string; type: string }[],
+    ] as Thread[],
+    logs: [] as { id: number; action: string; type: string; thread: string; time: string }[],
     stats: { total: 0, processed: 0, maxQueue: 0, capacity: 100 }
   });
 
@@ -64,8 +63,10 @@ export default function Home() {
 
             eng.logs.push({
               id: Date.now() + Math.random(),
-              action: `${getLogTime()} [INFO] Thread ${t.realId} completed Task ${t.currentTask.taskId}: ${resultStr}`,
-              type: 'success'
+              action: `Completed Task ${t.currentTask.taskId}: ${resultStr}`,
+              type: 'success',
+              thread: `THREAD-${t.realId}`,
+              time: getLogTime()
             });
             t.currentTask = null;
             stateMutated = true;
@@ -81,8 +82,10 @@ export default function Home() {
           t.remaining = task.weight;
           eng.logs.push({
             id: Date.now() + Math.random(),
-            action: `${getLogTime()} [INFO] Thread ${t.realId} processing Task ${task.taskId} (${task.type})`,
-            type: 'working'
+            action: `Processing Task ${task.taskId} (${task.type})`,
+            type: 'working',
+            thread: `THREAD-${t.realId}`,
+            time: getLogTime()
           });
           stateMutated = true;
         }
@@ -117,8 +120,10 @@ export default function Home() {
     if (eng.queue.length >= eng.stats.capacity) {
       eng.logs.push({
         id: Date.now(),
-        action: `${getLogTime()} [ERROR] Queue is full (Max capacity: ${eng.stats.capacity})`,
-        type: 'error'
+        action: `Queue is full (Max capacity: ${eng.stats.capacity})`,
+        type: 'error',
+        thread: 'MAIN',
+        time: getLogTime()
       });
       setTick(t => t + 1);
       return;
@@ -130,8 +135,10 @@ export default function Home() {
     
     eng.logs.push({
       id: Date.now() + Math.random(),
-      action: `${getLogTime()} [INFO] Task ${taskId} added to queue`,
-      type: 'info'
+      action: `Task ${taskId} added to queue`,
+      type: 'info',
+      thread: 'MAIN',
+      time: getLogTime()
     });
     setTick(t => t + 1);
   };
@@ -143,7 +150,7 @@ export default function Home() {
     eng.stats = { total: 0, processed: 0, maxQueue: 0, capacity: 100 };
     eng.queue = [];
     eng.threads.forEach(t => { t.status = 'IDLE'; t.completed = 0; t.currentTask = null; });
-    eng.logs = [{ id: Date.now(), action: `${getLogTime()} [INFO] System started with 4 threads`, type: 'info' }];
+    eng.logs = [{ id: Date.now(), action: `System started with 4 threads`, type: 'info', thread: 'MAIN', time: getLogTime() }];
 
     setIsRunning(true);
     setIsShuttingDown(false);
@@ -156,7 +163,7 @@ export default function Home() {
 
   const handleShutdown = () => {
     setIsShuttingDown(true);
-    engineRef.current.logs.push({ id: Date.now(), action: `${getLogTime()} [INFO] All tasks enqueued. Signalling shutdown.`, type: 'error' });
+    engineRef.current.logs.push({ id: Date.now(), action: `All tasks enqueued. Signalling shutdown.`, type: 'error', thread: 'MAIN', time: getLogTime() });
     setTick(t => t + 1);
     setTimeout(() => setIsRunning(false), 2000);
   };
@@ -368,7 +375,7 @@ export default function Home() {
                   </span>
                 </div>
                 
-                <div className={`flex-1 ${log.type === 'error' ? 'text-brutal-red font-bold' : log.type === 'success' ? 'text-green-700 font-bold' : log.type === 'working' ? 'text-brutal-blue font-semibold' : 'text-gray-700'}`}>
+                <div className={`flex-1 ${log.type === 'error' ? 'text-brutal-red font-bold' : log.type === 'success' ? 'text-green-700 font-bold' : log.type === 'working' ? 'text-brutal-blue font-semibold' : log.type === 'info' ? 'text-pink-600 font-semibold' : 'text-gray-700'}`}>
                   {log.action}
                 </div>
 

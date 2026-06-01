@@ -1,5 +1,6 @@
 #include "thread_pool.h"
 #include "logger.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -75,7 +76,7 @@ void *worker_routine(void *arg) {
         pthread_mutex_unlock(&pool->queue->mutex);
         pthread_mutex_unlock(&pool->stats_mutex);
 
-        log_message(LOG_INFO, "Thread %d processing Task %d (%s)", local_id, task.task_id, task_type_to_string(task.type));
+        log_message(LOG_INFO, "[THREAD-%d] [TASK-%d] Processing %s task", local_id, task.task_id, task_type_to_string(task.type));
 
         clock_gettime(CLOCK_MONOTONIC, &task.start_time);
         
@@ -86,22 +87,19 @@ void *worker_routine(void *arg) {
         clock_gettime(CLOCK_MONOTONIC, &task.end_time);
 
         if (process_status == STATUS_SUCCESS) {
-            log_message(LOG_INFO, "Thread %d completed Task %d: %s", local_id, task.task_id, result_buffer);
+            log_message(LOG_INFO, "[THREAD-%d] [TASK-%d] Completed: %s", local_id, task.task_id, result_buffer);
         } else {
-            log_message(LOG_ERROR, "Thread %d failed Task %d: %s", local_id, task.task_id, result_buffer);
+            log_message(LOG_ERROR, "[THREAD-%d] [TASK-%d] Failed: %s", local_id, task.task_id, result_buffer);
         }
 
         // İstatistikleri güncelle
         pthread_mutex_lock(&pool->stats_mutex);
         pool->total_processed++;
         pool->thread_task_counts[thread_id]++;
-        
-        // Aslında görev performansını da hesaplamamız lazım (Total Task Time vs)
-        // Ama task objesini main tarafına geri göndermenin maliyeti var, 
-        // global değişkende task sürelerinin toplamını tutmak daha temiz.
-        // O yüzden main dosyasında global süre ölçeceğiz.
-        
         pthread_mutex_unlock(&pool->stats_mutex);
+
+        double task_time = timespec_to_ms(task.start_time, task.end_time);
+        update_global_task_time(task_time);
     }
 
     return NULL;
