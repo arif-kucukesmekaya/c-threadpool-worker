@@ -1,26 +1,26 @@
-[2026-06-01 15:02:30] [INFO] [MAIN] System started with 4 threads
-[2026-06-01 15:02:30] [INFO] [MAIN] [TASK-1] Added to queue: PRIME 97
-[2026-06-01 15:02:30] [INFO] [THREAD-1] [TASK-1] Processing PRIME task
-[2026-06-01 15:02:30] [INFO] [MAIN] [TASK-2] Added to queue: PRIME 100
-[2026-06-01 15:02:30] [INFO] [THREAD-2] [TASK-2] Processing PRIME task
-[2026-06-01 15:02:31] [INFO] [MAIN] [TASK-3] Added to queue: PRIME 7919
-[2026-06-01 15:02:31] [INFO] [THREAD-3] [TASK-3] Processing PRIME task
-[2026-06-01 15:02:31] [INFO] [MAIN] [TASK-4] Added to queue: LINECOUNT test_files/file1.txt
-[2026-06-01 15:02:31] [INFO] [THREAD-4] [TASK-4] Processing LINECOUNT task
-[2026-06-01 15:02:31] [INFO] [THREAD-1] [TASK-1] Completed: 97 is prime
-[2026-06-01 15:02:31] [INFO] [MAIN] [TASK-5] Added to queue: CHARCOUNT test_files/file2.txt
-[2026-06-01 15:02:31] [INFO] [THREAD-1] [TASK-5] Processing CHARCOUNT task
-[2026-06-01 15:02:31] [INFO] [THREAD-2] [TASK-2] Completed: 100 is not prime
-[2026-06-01 15:02:31] [INFO] [MAIN] [TASK-6] Added to queue: LINECOUNT test_files/file3.txt
-[2026-06-01 15:02:31] [INFO] [THREAD-2] [TASK-6] Processing LINECOUNT task
-[2026-06-01 15:02:31] [INFO] [THREAD-3] [TASK-3] Completed: 7919 is prime
-[2026-06-01 15:02:31] [INFO] [MAIN] [TASK-7] Added to queue: CHARCOUNT test_files/file1.txt
-[2026-06-01 15:02:31] [INFO] [THREAD-3] [TASK-7] Processing CHARCOUNT task
-[2026-06-01 15:02:32] [INFO] [THREAD-4] [TASK-4] Completed: File test_files/file1.txt has 1 lines
-[2026-06-01 15:02:32] [INFO] [MAIN] [TASK-8] Added to queue: PRIME 9973
-[2026-06-01 15:02:32] [INFO] [THREAD-4] [TASK-8] Processing PRIME task
-[2026-06-01 15:02:32] [INFO] [MAIN] All tasks enqueued. Signalling shutdown.
-[2026-06-01 15:02:32] [INFO] [THREAD-1] [TASK-5] Completed: File test_files/file2.txt has 6 chars
-[2026-06-01 15:02:32] [INFO] [THREAD-2] [TASK-6] Completed: File test_files/file3.txt has 1 lines
-[2026-06-01 15:02:32] [INFO] [THREAD-3] [TASK-7] Completed: File test_files/file1.txt has 27 chars
-[2026-06-01 15:02:32] [INFO] [THREAD-4] [TASK-8] Completed: 9973 is prime
+[2026-06-02 08:42:18] [INFO] [MAIN] System started with 4 threads
+[2026-06-02 08:42:18] [INFO] [MAIN] [TASK-1] Added to queue: PRIME 97
+[2026-06-02 08:42:18] [INFO] [THREAD-1] [TASK-1] Processing PRIME task
+[2026-06-02 08:42:19] [INFO] [MAIN] [TASK-2] Added to queue: PRIME 100
+[2026-06-02 08:42:19] [INFO] [THREAD-2] [TASK-2] Processing PRIME task
+[2026-06-02 08:42:19] [INFO] [MAIN] [TASK-3] Added to queue: PRIME 7919
+[2026-06-02 08:42:19] [INFO] [THREAD-3] [TASK-3] Processing PRIME task
+[2026-06-02 08:42:19] [INFO] [MAIN] [TASK-4] Added to queue: LINECOUNT test_files/file1.txt
+[2026-06-02 08:42:19] [INFO] [THREAD-4] [TASK-4] Processing LINECOUNT task
+[2026-06-02 08:42:19] [INFO] [THREAD-1] [TASK-1] Completed: 97 is prime
+[2026-06-02 08:42:19] [INFO] [MAIN] [TASK-5] Added to queue: CHARCOUNT test_files/file2.txt
+[2026-06-02 08:42:19] [INFO] [THREAD-1] [TASK-5] Processing CHARCOUNT task
+[2026-06-02 08:42:19] [INFO] [THREAD-2] [TASK-2] Completed: 100 is not prime
+[2026-06-02 08:42:19] [INFO] [MAIN] [TASK-6] Added to queue: LINECOUNT test_files/file3.txt
+[2026-06-02 08:42:19] [INFO] [THREAD-2] [TASK-6] Processing LINECOUNT task
+[2026-06-02 08:42:20] [INFO] [THREAD-3] [TASK-3] Completed: 7919 is prime
+[2026-06-02 08:42:20] [INFO] [MAIN] [TASK-7] Added to queue: CHARCOUNT test_files/file1.txt
+[2026-06-02 08:42:20] [INFO] [THREAD-3] [TASK-7] Processing CHARCOUNT task
+[2026-06-02 08:42:20] [INFO] [THREAD-4] [TASK-4] Completed: File test_files/file1.txt has 1 lines
+[2026-06-02 08:42:20] [INFO] [MAIN] [TASK-8] Added to queue: PRIME 9973
+[2026-06-02 08:42:20] [INFO] [THREAD-4] [TASK-8] Processing PRIME task
+[2026-06-02 08:42:20] [INFO] [THREAD-1] [TASK-5] Completed: File test_files/file2.txt has 6 chars
+[2026-06-02 08:42:20] [INFO] [MAIN] All tasks enqueued. Signalling shutdown.
+[2026-06-02 08:42:20] [INFO] [THREAD-2] [TASK-6] Completed: File test_files/file3.txt has 1 lines
+[2026-06-02 08:42:20] [INFO] [THREAD-3] [TASK-7] Completed: File test_files/file1.txt has 27 chars
+[2026-06-02 08:42:21] [INFO] [THREAD-4] [TASK-8] Completed: 9973 is prime
