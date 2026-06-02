@@ -3,3 +3,8 @@ ui/.next/
 thread_pool
 *.o
 .agents/
+docs/superpowers/specs/
+about-project.md
+sunum_plani.md
+project-details.md
+PROJE_SUNUMU.md
